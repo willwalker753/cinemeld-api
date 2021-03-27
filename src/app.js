@@ -14,17 +14,17 @@ app.use(morgan(morganOption));
 app.use(helmet());
 app.use(cors());
 
-app.get('/', async (req, res) => {
+app.get('/home', async (req, res) => {
     let tempRes = [];
-    await axios.get('https://api.themoviedb.org/3/discover/movie?api_key='+TMDB_KEY+'&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=1')
+    await axios.get('https://api.themoviedb.org/3/discover/movie?api_key='+TMDB_KEY+'&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page='+req.query.page)
     .then((data) => {
-        tempRes.push(data.data.results);
+        tempRes= data.data.results;
     });
-    await axios.get('https://api.themoviedb.org/3/discover/movie?api_key='+TMDB_KEY+'&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=2')
-    .then((data) => {
-        tempRes.push(data.data.results);
-    });
-    tempRes = tempRes[0].concat(tempRes[1]);
+    // await axios.get('https://api.themoviedb.org/3/discover/movie?api_key='+TMDB_KEY+'&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=2')
+    // .then((data) => {
+    //     tempRes.push(data.data.results);
+    // });
+    // tempRes = tempRes[0].concat(tempRes[1]);
     res.send(tempRes);
 });
 
