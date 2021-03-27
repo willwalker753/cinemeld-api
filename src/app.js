@@ -14,15 +14,18 @@ app.use(morgan(morganOption));
 app.use(helmet());
 app.use(cors());
 
-app.get('/something', (req, res) => {
-    axios.get('https://api.themoviedb.org/3/movie/76341?api_key='+TMDB_KEY)
+app.get('/', async (req, res) => {
+    let tempRes = [];
+    await axios.get('https://api.themoviedb.org/3/discover/movie?api_key='+TMDB_KEY+'&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=1')
     .then((data) => {
-        data = data.data;
-        console.log(data);
-        res.send(data);
+        tempRes.push(data.data.results);
     });
-    
-   
+    await axios.get('https://api.themoviedb.org/3/discover/movie?api_key='+TMDB_KEY+'&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=2')
+    .then((data) => {
+        tempRes.push(data.data.results);
+    });
+    tempRes = tempRes[0].concat(tempRes[1]);
+    res.send(tempRes);
 });
 
 app.use(function errorHandler(error, req, res, next) {
