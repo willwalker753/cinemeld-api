@@ -19,6 +19,9 @@ app.get('/home', async (req, res) => {
     await axios.get('https://api.themoviedb.org/3/discover/movie?api_key='+TMDB_KEY+'&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page='+req.query.page)
     .then((data) => {
         tempRes = data.data.results;
+    })
+    .catch(error => {
+        console.log(error);
     });
     res.status(200).send(tempRes);
 });
@@ -28,8 +31,11 @@ app.get('/search', async (req, res) => {
     await axios.get('https://api.themoviedb.org/3/search/multi?api_key='+TMDB_KEY+'&language=en-US&page='+req.query.page+'&include_adult=false&query='+req.query.term)
     .then((data) => {
         tempRes = data.data.results;
+    })
+    .catch(error => {
+        console.log(error);
     });
-    res.status(200).send(tempRes);//delete this comment
+    res.status(200).send(tempRes);
 });
 
 app.use(function errorHandler(error, req, res, next) {
