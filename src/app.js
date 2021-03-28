@@ -18,14 +18,18 @@ app.get('/home', async (req, res) => {
     let tempRes = [];
     await axios.get('https://api.themoviedb.org/3/discover/movie?api_key='+TMDB_KEY+'&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page='+req.query.page)
     .then((data) => {
-        tempRes= data.data.results;
+        tempRes = data.data.results;
     });
-    // await axios.get('https://api.themoviedb.org/3/discover/movie?api_key='+TMDB_KEY+'&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=2')
-    // .then((data) => {
-    //     tempRes.push(data.data.results);
-    // });
-    // tempRes = tempRes[0].concat(tempRes[1]);
-    res.send(tempRes);
+    res.status(200).send(tempRes);
+});
+
+app.get('/search', async (req, res) => {
+    let tempRes = [];
+    await axios.get('https://api.themoviedb.org/3/search/multi?api_key='+TMDB_KEY+'&language=en-US&page='+req.query.page+'&include_adult=false&query='+req.query.term)
+    .then((data) => {
+        tempRes = data.data.results;
+    });
+    res.status(200).send(tempRes);
 });
 
 app.use(function errorHandler(error, req, res, next) {
