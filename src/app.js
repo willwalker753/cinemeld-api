@@ -29,7 +29,7 @@ app.get('/search', async (req, res) => {
     .then((data) => {
         tempRes = data.data.results;
     });
-    res.status(200).send(tempRes);
+    res.status(200).send(tempRes);//delete this comment
 });
 
 app.use(function errorHandler(error, req, res, next) {
