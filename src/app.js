@@ -38,6 +38,30 @@ app.get('/search', async (req, res) => {
     res.status(200).send(tempRes);
 });
 
+app.get('/genre', async (req, res) => {
+    let tempRes = [];
+    await axios.get('https://api.themoviedb.org/3/discover/'+req.query.type+'?api_key='+TMDB_KEY+'&page='+req.query.page+'&include_adult=false&with_genres='+req.query.id)
+    .then((data) => {
+        tempRes = data.data.results;
+    })
+    .catch(error => {
+        console.log(error);
+    });
+    res.status(200).send(tempRes);
+});
+
+app.get('/details', async (req, res) => {
+    let tempRes = [];
+    await axios.get('https://api.themoviedb.org/3/'+req.query.type+'/'+req.query.id+'?api_key='+TMDB_KEY+'&language=en-US')
+    .then((data) => {
+        tempRes = data.data.results;
+    })
+    .catch(error => {
+        console.log(error);
+    });
+    res.status(200).send(tempRes);
+});
+
 app.use(function errorHandler(error, req, res, next) {
     let response
     if (NODE_ENV === 'production') {
