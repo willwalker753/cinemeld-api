@@ -54,7 +54,7 @@ app.get('/details', async (req, res) => {
     let tempRes = [];
     await axios.get('https://api.themoviedb.org/3/'+req.query.type+'/'+req.query.id+'?api_key='+TMDB_KEY+'&language=en-US')
     .then((data) => {
-        tempRes = data.data.results;
+        tempRes = data.data;
     })
     .catch(error => {
         console.log(error);
