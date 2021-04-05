@@ -62,6 +62,18 @@ app.get('/details', async (req, res) => {
     res.status(200).send(tempRes);
 });
 
+app.get('/similar', async (req, res) => {
+    let tempRes = [];
+    await axios.get('https://api.themoviedb.org/3/'+req.query.type+'/'+req.query.id+'/similar?api_key='+TMDB_KEY+'&language=en-US&page='+req.query.page)
+    .then((data) => {
+        tempRes = data.data;
+    })
+    .catch(error => {
+        console.log(error);
+    });
+    res.status(200).send(tempRes);
+});
+
 app.use(function errorHandler(error, req, res, next) {
     let response
     if (NODE_ENV === 'production') {
