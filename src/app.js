@@ -33,6 +33,12 @@ let sql;
 let params;
 let pgResponse;
 
+app.get('/testing/wait', async (req, res) => {
+    setTimeout(() => {
+        res.status(200).send('All Done');
+    }, 1000 * 5);
+});
+
 app.get('/home', async (req, res) => {
     let tempRes = [];
     await axios.get('https://api.themoviedb.org/3/discover/movie?api_key='+TMDB_KEY+'&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page='+req.query.page)
