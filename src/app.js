@@ -163,7 +163,7 @@ app.post('/user/signup', async (req, res) => {
             res.status(201).send(pgResponse.rows)
         });
     } else {
-        res.status(400).send(responseArr);
+        res.status(200).send(responseArr);
     }
 });
 
@@ -197,12 +197,12 @@ app.post('/user/login', async (req, res) => {
             if(result === true) {
                 res.status(200).send(result);
             } else {
-                res.status(401).send(result);
+                res.status(200).send(['no_match']);
             }
             
         });
     } else {
-        res.status(400).send(responseArr);
+        res.status(200).send(responseArr);
     }
 });
 
