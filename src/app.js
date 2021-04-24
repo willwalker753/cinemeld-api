@@ -141,6 +141,8 @@ app.post('/user/signup', async (req, res) => {
             sql = 'INSERT INTO users(username, password, email, ts, verified, uid) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *';
             params = [ username, hash, email, ts, false, uid ];
             pgResponse = await pool.query(sql, params);
+            sql = 'CREATE TABLE '+uid+'(serial_id serial PRIMARY KEY, id VARCHAR ( 40 ) NOT NULL, poster_path VARCHAR( 100 ), type VARCHAR ( 20 ) NOT NULL, title VARCHAR ( 255 ) NOT NULL, tagline VARCHAR ( 100 ), runtime VARCHAR (50) )';
+            await pool.query(sql);
             let transporter = nodemailer.createTransport({
                 service: 'gmail',
                 auth: {
