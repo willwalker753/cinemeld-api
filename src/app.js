@@ -108,6 +108,8 @@ app.post('/user/signup', async (req, res) => {
         responseArr.push('username_empty');
     } if(password.length === 0) {
         responseArr.push('password_empty');
+    } else if(password.length < 6) {
+        responseArr.push('password_short');
     } if(email.length === 0) {
         responseArr.push('email_empty');
     }
@@ -160,10 +162,13 @@ app.post('/user/signup', async (req, res) => {
                     console.log('Verification email sent!')
                 }
             })
-            res.status(201).send(pgResponse.rows)
+            res.status(201).send({
+                type: 'success', 
+                data: pgResponse.rows
+            })
         });
     } else {
-        res.status(200).send(responseArr);
+        res.status(200).send({type:'fail', data:responseArr});
     }
 });
 
