@@ -176,6 +176,7 @@ app.post('/user/signup', async (req, res) => {
 
 app.post('/user/login', async (req, res) => {
     let responseArr = [];
+    let userInfo;
     let username = req.body.username;
     let password = req.body.password;
     let hashedPassword;
@@ -192,8 +193,14 @@ app.post('/user/login', async (req, res) => {
             responseArr.push('username_no_results');
         } else if(pgResponseUsername.rows.length > 0) {
             hashedPassword = pgResponseUsername.rows[0].password;
+            sql = 'SELECT * FROM users WHERE username = ($1)';
+            params = [ username ];
+            userInfo = await pool.query(sql, params);    
         } else if(pgResponseEmail.rows.length > 0) {
             hashedPassword = pgResponseEmail.rows[0].password;
+            sql = 'SELECT * FROM users WHERE email = ($1)';
+            params = [ username ];
+            userInfo = await pool.query(sql, params);    
         }
     } 
     if(password.length === 0) {
@@ -201,16 +208,45 @@ app.post('/user/login', async (req, res) => {
     }
     if(responseArr.length === 0) {
         bcrypt.compare(password, hashedPassword, function(err, result) {
-            if(result === true) {
-                res.status(200).send(result);
+            if(result === true) {     
+                res.status(200).send({
+                    type: 'pass',
+                    data: userInfo.rows[0]
+                });
             } else {
-                res.status(200).send(['no_match']);
+                res.status(200).send({
+                    type: 'fail',
+                    data: ['no_match']
+                });
             }
-            
         });
     } else {
-        res.status(200).send(responseArr);
+        res.status(200).send({
+            type: 'fail',
+            data: responseArr
+        });
     }
+});
+
+app.post('/user/addFavorite', async (req, res) => {
+    sql = 'INSERT INTO '+req.body.uid+'(id, poster_path, type, title, tagline, runtime) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *';
+    params = [req.body.id, req.body.poster_path, req.body.type, req.body.title, req.body.tagline, req.body.runtime];
+    pgResponse = await pool.query(sql, params);
+    res.status(200).send(pgResponse);
+});
+
+app.post('/user/removeFavorite', async (req, res) => {
+    sql = 'DELETE FROM '+req.body.uid+' * WHERE id === ($1)';
+    params = [req.body.id];
+    pgResponse = await pool.query(sql, params);
+    res.status(200).send(pgResponse);
+});
+
+app.post('/user/favorites', async (req, res) => {
+    sql = 'SELECT * FROM '+req.body.uid+' RETURNING *';
+    params = [req.body.id];
+    pgResponse = await pool.query(sql, params);
+    res.status(200).send(pgResponse);
 });
 
 app.use(function errorHandler(error, req, res, next) {
