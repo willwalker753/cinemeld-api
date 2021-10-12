@@ -249,6 +249,16 @@ app.post('/user/favorites', async (req, res) => {
     res.status(200).send(pgResponse);
 });
 
+// temp endpoint remove
+app.get('/testingtesting', async (req, res) => {
+    console.log(req)
+    res.status(200).send();
+});
+app.post('/testingtesting', async (req, res) => {
+    console.log(req)
+    res.status(200).send();
+});
+
 app.use(function errorHandler(error, req, res, next) {
     let response
     if (NODE_ENV === 'production') {
