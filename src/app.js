@@ -5,7 +5,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const axios = require('axios');
 const bcrypt = require('bcrypt');
-const short = require('short-uuid');
+const { v4: uuidv4 } = require('uuid');
 const nodemailer = require('nodemailer');
 const { NODE_ENV } = require('./config');
 const TMDB_KEY = process.env.TMDB_KEY;
@@ -127,7 +127,7 @@ app.post('/user/signup', async (req, res) => {
             responseArr.push('email_taken')
         }
         if(responseArr.length === 0) {
-            let uid = short.generate();
+            let uid = uuidv4();
             let options = {
                 timeZone: 'America/Chicago',
                 year: 'numeric',
@@ -139,11 +139,12 @@ app.post('/user/signup', async (req, res) => {
             }, formatter = new Intl.DateTimeFormat([], options);
             let ts = formatter.format(new Date());
             bcrypt.hash(password, 10, async function (err, hash) {   
-                sql = 'INSERT INTO users(username, password, email, ts, verified, uid) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *';
-                params = [ username, hash, email, ts, false, uid ];
+                sql = 'INSERT INTO users(user_id, username, password, email, ts) VALUES ($1, $2, $3, $4, $5) RETURNING *';
+                params = [ uid, username, hash, email, ts ];
                 pgResponse = await pool.query(sql, params);
-                sql = 'CREATE TABLE '+uid+'(serial_id serial PRIMARY KEY, id VARCHAR ( 40 ) NOT NULL, poster_path VARCHAR( 100 ), type VARCHAR ( 20 ) NOT NULL, title VARCHAR ( 255 ) NOT NULL, tagline VARCHAR ( 100 ), runtime VARCHAR (50) )';
-                await pool.query(sql);
+                // sql = 'CREATE TABLE '+uid+'(serial_id serial PRIMARY KEY, id VARCHAR ( 40 ) NOT NULL, poster_path VARCHAR( 100 ), type VARCHAR ( 20 ) NOT NULL, title VARCHAR ( 255 ) NOT NULL, tagline VARCHAR ( 100 ), runtime VARCHAR (50) )';
+                // await pool.query(sql);
+
                 // let transporter = nodemailer.createTransport({
                 //     service: 'gmail',
                 //     auth: {
@@ -234,25 +235,32 @@ app.post('/user/login', async (req, res) => {
     }
 });
 
-app.post('/user/addFavorite', async (req, res) => {
-    sql = 'INSERT INTO '+req.body.uid+'(id, poster_path, type, title, tagline, runtime) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *';
-    params = [req.body.id, req.body.poster_path, req.body.type, req.body.title, req.body.tagline, req.body.runtime];
-    pgResponse = await pool.query(sql, params);
-    res.status(200).send(pgResponse);
-});
-
-app.post('/user/removeFavorite', async (req, res) => {
-    sql = 'DELETE FROM '+req.body.uid+' * WHERE id === ($1)';
-    params = [req.body.id];
-    pgResponse = await pool.query(sql, params);
-    res.status(200).send(pgResponse);
-});
-
 app.post('/user/favorites', async (req, res) => {
-    sql = 'SELECT * FROM '+req.body.uid+' RETURNING *';
-    params = [req.body.id];
+    sql = 'INSERT INTO favorites(user_id, moshow_id, poster_path, type, title, tagline, runtime) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *';
+    params = [req.body.user_id, req.body.moshow_id, req.body.poster_path, req.body.type, req.body.title, req.body.tagline, req.body.runtime];
     pgResponse = await pool.query(sql, params);
     res.status(200).send(pgResponse);
+});
+
+app.delete('/user/favorites/:user_id/:moshow_id', async (req, res) => {
+    sql = 'DELETE FROM favorites WHERE user_id = ($1) AND moshow_id = ($2)';
+    params = [req.params.user_id, req.params.moshow_id];
+    pgResponse = await pool.query(sql, params);
+    res.status(200).send(pgResponse.rows);
+});
+
+app.get('/user/favorites/:user_id', async (req, res) => {
+    try {
+        sql = 'SELECT * FROM favorites WHERE user_id = ($1)';
+        params = [req.params.user_id];
+        pgResponse = await pool.query(sql, params);
+        res.status(200).send(pgResponse.rows);
+    }
+    catch(error) {
+        console.log(error)
+        res.status(500).send()
+    }
+    
 });
 
 app.use(function errorHandler(error, req, res, next) {
