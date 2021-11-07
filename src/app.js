@@ -239,7 +239,7 @@ app.post('/user/favorites', async (req, res) => {
     sql = 'INSERT INTO favorites(user_id, moshow_id, poster_path, type, title, tagline, runtime) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *';
     params = [req.body.user_id, req.body.moshow_id, req.body.poster_path, req.body.type, req.body.title, req.body.tagline, req.body.runtime];
     pgResponse = await pool.query(sql, params);
-    res.status(200).send(pgResponse);
+    res.status(200).send(pgResponse.rows);
 });
 
 app.delete('/user/favorites/:user_id/:moshow_id', async (req, res) => {
@@ -254,7 +254,11 @@ app.get('/user/favorites/:user_id', async (req, res) => {
         sql = 'SELECT * FROM favorites WHERE user_id = ($1)';
         params = [req.params.user_id];
         pgResponse = await pool.query(sql, params);
-        res.status(200).send(pgResponse.rows);
+        let favoritesData = pgResponse.rows;
+        for(let i=0; i<favoritesData.length; i++) {
+            favoritesData[i].loading = false
+        }
+        res.status(200).send(favoritesData);
     }
     catch(error) {
         console.log(error)
